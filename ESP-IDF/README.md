@@ -5,20 +5,35 @@
 - schematic :
 - reference manual:
 - datasheet :
-- software : [esp-idf v4.2.3](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/windows-setup.html) + [visual studio code](https://code.visualstudio.com/) 
+- software : [esp-idf](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/windows-setup.html) + [visual studio code](https://code.visualstudio.com/) 
 <!-- `` note `` [video hướng dẫn cài esp-idf](https://www.youtube.com/watch?v=YK9g9GWQigg&t=146s) -->
 ### 2. Tạo mới một project
+- cấu trúc một project
+```
+my_project/
+├── CMakeLists.txt
+├── sdkconfig
+├── components/
+│   └── my_component/
+│       ├── CMakeLists.txt
+|       ├── component.mk
+│       ├── my_component.c
+│       └── my_component.h
+└── main/
+    ├── CMakeLists.txt
+    └── main.c
+```
 - coppy một project mẫu
 - thay đổi tên dự án, tên file .c 
 - ./main/CMakeLists.txt thay đổi: idf_component_register(SRCS "tên_hàm_main.c"INCLUDE_DIRS ".")
 - ./CMakeLists.txt thay đổi: project(tên_project)
 - ./Makefile.mk PROJECT_NAME := sample_project
-### 4. Tạo và thêm thư viện
+### 3. Tạo và thêm thư viện
 - Tạo folder chứa thư viện và header file (*.h) + source file (*.c) + CMakeList.txt + component.mk
 - ./lib/CMakeList.txt thêm
 ``` Makefile
 set(app_src tên_source.c)
-set(pri_req )
+set(pri_req ten_driver) # tra ten drive tren web esp-idf  
 idf_component_register(SRCS ${app_src}
                     INCLUDE_DIRS "."
                     REQUIRES ${pri_req})
@@ -32,13 +47,14 @@ COMPONENT_SRCDIRS := .
 ``` Makefile
 set(EXTRA_COMPONENT_DIRS ${CMAKE_CURENT_LIST_DIR}/tên_folder_chứa_thư_viện)
 ```
-### 3. Build và load code to tagert
+### 4. Build và load code to tagert
 - command line 
 ``` Shell
 cd PATH             # PATH đường dẫn đến folder chứa project
 idf.py buildconfig  # tùy chỉnh cấu hình trong khi build
 idf.py build        # buil chương trình
 idf.py -p (PORT) flash monitor # Port: cổng kết nối và nạp chương trình vào esp32
+idf.py fullclean    # clean
 ```
 ## II. GPIO API
 ``` C
@@ -74,4 +90,8 @@ static void IRAM_ATTR isr_handler(void* arg)
 }
 ```
 
+## http request
 
+## 4. WIFI STA MODE
+post and get data to thingspeak.com
+web server
