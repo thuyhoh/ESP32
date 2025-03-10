@@ -9,6 +9,7 @@ const char *ssid = "6 aesiunhan";
 const char *pass = "cccccccc";
 String dataJson = "";
 float nd;
+
 const char MAIN_page[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
@@ -25,14 +26,13 @@ const char MAIN_page[] PROGMEM = R"=====(
             document.getElementById("LED_State").innerHTML = "OFF";
         }
         var xhttp = new XMLHttpRequest();
-        xhttp.open('GET', '/Button?Button=' + document.getElementById("LED_State").innerHTML, true);
+        xhttp.open('GET', '/LED?LED=' + document.getElementById("LED_State").innerHTML, true);
         xhttp.send();
     }
 
     function Msg_Send() {
         var tmp = document.getElementById("input1").value;
-        if(tmp != null)
-        {
+        if (tmp != null) {
             console.log(tmp);
             var xhttp = new XMLHttpRequest();
             document.getElementById("input1").value = "";
@@ -40,21 +40,43 @@ const char MAIN_page[] PROGMEM = R"=====(
             xhttp.send();
         }
     }
+
+    function UpdateData() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var DataVDK = xhttp.responseText;
+                console.log("Dữ liệu VDK:" + DataVDK);
+                var DataJson = JSON.parse(DataVDK);
+                if (DataJson.ND != null) {
+                    document.getElementById("ND").innerHTML = DataJson.ND;
+                }
+            }
+        }
+        xhttp.open('GET', '/Update', true);
+        xhttp.send();
+        setTimeout(function () { UpdateData() }, 2000);
+    }
 </script>
 
-<body>
+<body onload="UpdateData()">
     <h1>ESP32 Webserver</h1>
     <div>
         <label>LED Status: </label>
         <label id="LED_State">OFF</label>
         <button id="bnt1" onclick=LED_Ctrl()>button</button>
     </div>
-    
+
     <div>
         <br>Messenge: <input type="text" name="fname" id="input1">
         <button id="bnt2" onclick=Msg_Send()>Send</button>
     </div>
+    <div>
+        <br><label>Nhiệt độ: </label>
+        <label id="LED_State">00.00</label>
+    </div>
 </body>
+
 </html>
 )=====";
 
