@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<header>
+    <meta charset="UTF-8">
+    <!-- thư viện mqtt -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+    <title>MQTT Broker</title>
+</header>
+<script>
+    // Địa chỉ server
+    var hostname = "192.168.1.13";
+    // kết nối port websockets
+    var port = 9001;
+    // id client => random => giúp hệ thống không bị reset
+    var clientId = String(parseInt(Math.random() * 100, 10));
+    clientId += new Date().getUTCMilliseconds();
+    // topic nhận dữ liệu => esp gửi dữ liệu ở topic nào để web subscribe
+    var topicpub = "pubdata";
+    // topic ESP nhận dữ liệu
+    var topicsub = "subdata";
+    // khai báo 
+    mqttClient = new Paho.MQTT.Client(hostname, port, clientId);
+
+    // hàm đọc dữ liệu
+    mqttClient.onMessageArrived = MessageArrived;
+
+    // hàm check lỗi
+    mqttClient.onConnectionLost = ConnectionLost;
+
+    // connect
+    Connect();
+    /*Initiates a connection to the MQTT broker*/
+    function Connect() {
+        mqttClient.connect({
+            useSSL: false, // Dùng SSL nếu broker yêu cầu
+            reconnect: true, // có kết nối lại hay không 
+            onSuccess: function () {
+                console.log("Kết nối MQTT thành công!");
+            },
+            onFailure: function (error){
+                console.log("Kết nối thất bại:", error.errorMessage);
+            },
+            keepAliveInterval: 10,
+        });
+    }
+    /*Callback for successful MQTT connection */
+    function Connected() {
+        console.log("Connected MQTT broker"); // println => monitor => để thấy nó có kết nối hay không
+        // Kết nối xong thì đăng kí topic nhận dữ liệu
+        mqttClient.subscribe(topicpub);
+    }
+
+    /*Callback for failed connection*/
+    function ConnectionFailed(res) {
+        console.log("Connect failed:" + res.errorMessage);
+    }
+
+    /*Callback for lost connection*/
+    function ConnectionLost(res) {
+        if (res.errorCode !== 0) {
+            console.log("Connection lost:" + res.errorMessage);
+            Connect();
+        }
+    }
+
+    // hàm nhận dữ liệu từ broker  ( dữ liệu của esp gửi về)
+    function MessageArrived(message) {
+
+        // dữ liệu của web nhận được trong cái biến message.payloadString ( được esp chuẩn hóa về JSON rùi)
+        console.log(message.destinationName + " : " + message.payloadString);
+    }
+
+    function TB1() {
+        console.log("TB1");
+        var message = "Thiet bi 1 duoc khoi dong";
+        mqttClient.send("subdata", DataSend, 2, false);
+    }
+
+    function TB2() {
+        console.log("TB2");
+        var DataSend = JSON.stringify({ temp: 25, humidity: 60 }); // Dữ liệu gửi dưới dạng JSON
+        var message = new Paho.MQTT.Message(DataSend);
+        mqttClient.send("subdata", DataSend, 2, false);
+    }
+
+
+</script>
+
+<body>
+    <h1>ESP32 MQTT</h1>
+    <label> Thiết bị 1 </label>
+    <button onclick="TB1()"> button </button>
+    <br>
+    <label> Thiết bị 2 </label>
+    <button onclick="TB2()"> button </button>
+</body>
+
+</html>

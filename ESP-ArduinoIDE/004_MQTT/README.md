@@ -27,14 +27,18 @@ client.setServer(IPAddress ip, uint16_t port);
 client.setServer(const char* domands, uint16_t port);
 
 /**
- * @brief: Kiểm tra kết nối(/Kết nối) với MQTT broker
+ * @brief: Kết nối với MQTT broker
  * @param[clientId]: chuỗi định danh của thiết bị trong mqtt 
  * @param[username]: Tên người dùng để xác thực với broker (nếu broker yêu cầu).
  * @param[password]: Mật khẩu để xác thực (nếu broker yêu cầu). 
 */
+client.connect(const char* clientId);
+client.connect(const char* clientId, const char* username, const char* password);
+
+/**
+  * @brief: Kiểm tra kết nối với MQTT broker
+*/
 client.connected(void);
-client.connected(const char* clientId);
-client.connected(const char* clientId, const char* username, const char* password);
 
 /**
  * @brief: xuất bản (publish) một thông điệp từ ESP tới MQTT broker
@@ -68,5 +72,86 @@ client.subscribe(const char* topic, uint8_t qos);
 ## III. Diagram
 ![image](MQTT_diagram.png)
 
+## IV. Mostqtto
+### 1. Download and setup
+### 2. Run a MQTT Broker in pc
+- cmd => cd mostqito_path
+- Server lắng nghe Topic từ các mqtt_client: 
+``` sh
+mosquitto_sub -h mqtt_ip -p mqtt_port -t Topic
+mosquitto_sub -h mqtt_ip -p mqtt_port -t # => chạy toàn bộ topic
+```
+- trên client xuất bản một tin nhắn "message" cho Topic:  
+``` sh
+mosquitto_pub -h mqtt_ip -p mqtt_port -t Topic -m "message"
+```
+### 3. Web MQTT
+#### HTML
+``` html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+```
+#### Javascript
+``` javascript
+var hostname = "192.168.1.13"; // Địa chỉ của ip server
+var port = 9001; // kết nối port websockets
+// id client => random => giúp hệ thống không bị reset
+var clientId = String(parseInt(Math.random() * 100, 10));
+clientId += new Date().getUTCMilliseconds();
+// topic nhận dữ liệu => esp gửi dữ liệu ở topic nào để web subscribe
+var topicpub = "pubdata";
+// topic ESP nhận dữ liệu
+var topicsub = "subdata";
+// Tạo clinet MQTT
+mqttClient = new Paho.MQTT.Client(hostname, port, clientId);
+
+// đăng ký một hàm callback (MessageArrived) để xử lý khi client nhận được tin nhắn từ MQTT broker
+mqttClient.onMessageArrived = MessageArrived; 
+
+// đăng ký một hàm callback (MessageArrived) để xử lý khi sảy ra lỗi khi connect
+mqttClient.onConnectionLost = ConnectionLost;
+
+/* gọi hàm connect */
+Connect();
+
+/*Hàm callback khi kết nối thành công*/
+function Connected() {
+    console.log("Connected MQTT broker"); // println => monitor => để thấy nó có kết nối hay không
+    // Kết nối xong thì đăng kí topic nhận dữ liệu
+    mqttClient.subscribe(topicpub);
+}
+var DataSend = "client " + clientId + "tham gia vao mqtt broker";
+mqttClient.send("subdata", DataSend, 2, false);
+
+/*Hàm callback khi kết nối lỗi*/
+function ConnectionFailed(res) {
+    console.log("Connect failed:" + res.errorMessage);
+}
+
+/* Khởi tạo kết nối */
+function Connect() {
+    mqttClient.connect({
+        useSSL: false,
+        onSuccess: Connected,
+        onFailure: ConnectionFailed,
+        keepAliveInterval: 10, // sau 10 giây thì MQTT Client sẽ gửi lại PINGREQ đến MQTT Server
+    });
+}
+
+/*Callback for lost connection*/
+function ConnectionLost(res) {
+    if (res.errorCode !== 0) {
+        console.log("Connection lost:" + res.errorMessage);
+        Connect();
+    }
+}
+
+// Hàm callback (MessageArrived) để xử lý khi client nhận được tin nhắn từ MQTT broker
+function MessageArrived(message) {
+
+    // dữ liệu của web nhận được trong cái biến message.payloadString ( được esp chuẩn hóa về JSON rùi)
+    console.log(message.destinationName + " : " + message.payloadString);
+}
 
 
+
+```
