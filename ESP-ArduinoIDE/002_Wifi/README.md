@@ -2,16 +2,16 @@
 ## API
 ``` C
 /**
- * Connect Wifi
+ * @brief: Connect Wifi
 */
-WiFi.begin(ssid/*string*/, pass/*string*/);
+WiFi.begin(const char* ssid, const char*  pass);
 /**
- * Check Wifi connect status
+ * @brief: Check Wifi connect status
+ * @retval: enum wl_status_t
 */
 WiFi.status();
 /**
  * @brief: Check Wifi get local IP 
- * @retval: enum wl_status_t
 */
 WiFi.localIP();
 ```
