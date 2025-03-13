@@ -4,7 +4,7 @@
 
 WebServer server(80);
 
-#define LED_Pin 2
+#define LED_Pin 4
 const char *ssid = "6 aesiunhan";
 const char *pass = "cccccccc";
 String dataJson = "";
@@ -14,6 +14,7 @@ const char MAIN_page[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
 <header>
+    <meta charset="UTF-8">
     <title>Webserver</title>
 </header>
 <script>
@@ -87,10 +88,11 @@ void LED_Control(void);
 
 void setup()
 {
+  pinMode(LED_Pin, OUTPUT);
   Serial.begin(9600);
+  Serial.println("Start");
   /* Connect Wifi */
   Wifi_Connect(ssid, pass);
-
   // Turn on Server
   server.on("/", []
             { Send_WebPage(); });
@@ -124,32 +126,28 @@ void Wifi_Connect(const char *ssid, const char *pass)
   Serial.println(WiFi.localIP());
 }
 
-void SendWebPage(void)
+void Send_WebPage(void)
 {
   server.send(200, "text/html", MAIN_page);
 }
 
 void LED_Control(void)
 {
-  serial.println(">> xu ly LED ");
-  char msg[3];
-  strcpy(msg, server.arg("LED"));
-  serial.print(msg);
-  if (strcmp(msg, "ON") == 0)
+  Serial.print(">> xu ly LED ");
+  String msg = server.arg("LED");
+
+  if (msg.indexOf("ON") >= 0)
   {
+    Serial.println(msg);
     digitalWrite(LED_Pin, HIGH);
   }
-  else if (strcmp(msg, "OFF") == 0)
+  else if (msg.indexOf("OFF") >= 0)
   {
+    Serial.println(msg);
     digitalWrite(LED_Pin, LOW);
   }
   else
   {
     Serial.println("error");
   }
-}
-void Send_Update(void)
-{
-  dataJson = dataJson + "{\"ND\":\"" + String(nd) + "\"}";
-  server.send(200, "text/html", String(dataJson));
 }
