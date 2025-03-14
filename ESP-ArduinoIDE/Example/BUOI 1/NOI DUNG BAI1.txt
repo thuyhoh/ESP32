@@ -1,0 +1,161 @@
+Nội dung Bài 1:
+1/ Hàm nhận dữ liệu Monitor ( ESP ) gửi tới Arduino
+2/ Xử lý dữ liệu nhận được và ứng dụng điều khiển thiết bị
+3/ Truyền dữ liệu Uno về Monitor( ESP8266 - esp32)
+
+//============================================================================
+PHẦN 1: ARDUINO NHẬN DỮ LIỆU 
+
+Bước 1: Khởi tạo cổng truyền - nhận UART và tốc độ truyền ( baud)
+Bước 2: Viết hàm nhận dữ liệu theo thuật toán mình định ra
+
+**** THUẬT TOÁN TRUYỀN DỮ LIỆU => [JHJKLSHSDHFLDSLKFDS]\n
+
+VD: ABCDEF\n => đọc tới byte \n thì dừng quá trình lưu biến  => xử lý dữ liệu => xóa biến => đọc lại
+
+- Code nhận tới byte \n
+
+while (Serial.available()) 
+{
+    char inChar = (char)Serial.read(); 
+    inputString += inChar;	
+    if (inChar == '\n')
+    {
+      stringComplete = true;
+    }
+    if (stringComplete == true)
+    {
+      Serial.print("Data nhận được: ");
+      Serial.println(inputString);
+      // xử lý dữ liệu nhân dc
+      //=======================
+      
+      //====================
+      inputString = "";
+      stringComplete = false;
+    }
+}
+//============================================================================
+PHẦN 2: Xử lý dữ liệu nhận được và ứng dụng điều khiển thiết bị
+
+=> THUẬT TOÁN KÈM THEO KÍ TỰ MỤC ĐÍCH PHÂN BIỆT => LỖI , LẤY DỮ LIỆU DỄ DÀNH HƠN
+
+ĐIỀU KHIỂN TB1 
+=> ON gửi A1B
+=> OFF gửi A0B
+ĐIỀU KHIỂN TB2
+=> ON gửi C1D
+=> OFF gửi C0D
+CÀI ĐẶT THÔNG SỐ 1
+=> E [dulieu] F
+
+CÀI ĐẶT THÔNG SỐ 2
+=> G [dulieu] H
+
+
+=> HÀM XỬ LÝ LIỆU
+
+** ĐIỀU KHIỂN ON OFF
+//inputString LÀ CHUỖI TỔNG DỮ LIỆU TỪ CỔNG UART NHẬN ĐƯỢC
+
+//inputString.indexOf("A1B") KIỂM TRA A1B CÓ TỒN TẠI TRONG CHUỖI TỔNG inputString HAY KHÔNG
++ NẾU CÓ TỒN TẠI THÌ => inputString.indexOf("A1B") trả về 1 con số nguyên >= 0 
++ Nếu không tồn tại => inputString.indexOf("A1B") trả về 1 con số nguyên = -1
+
+if (inputString.indexOf("A1B") >= 0)
+{
+    // điều khiển thiết bị ON
+}
+else if (inputString.indexOf("A0B") >= 0)
+{
+    // điều khiển thiết bị OFF
+}
+  
+ 
+** TÁCH DỮ LIỆU
+B1: tìm vị trí kí tự E F G H trong chuỗi tổng
+B2: cắt chuỗi
+B3: gắn cho biến gì đó
+
+
+// Bước 1
+int TimE, TimF, TimG , TimH ;
+TimE = inputString.indexOf("E");
+TimF = inputString.indexOf("F");
+
+TimG = inputString.indexOf("G");
+TimH = inputString.indexOf("H");
+Bước 2 => trước khi cắt chuỗi kiểm tra dữ liệu theo cặp
+if (TimE >= 0 && TimF >= 0)
+{
+    // cắt chuỗi substring(vị trí bắt đầu , kết thúc)
+	//E du lieu F
+    String DataEF = "";
+    DataEF = inputString.substring(TimE + 1 , TimF);
+	//Bước 3
+    BienEF = DataEF.toInt();
+    Serial.print("BienEF: ");
+    Serial.println(BienEF);
+}
+  
+  
+*****ỨNG DỤNG ĐIỀU KHIỂN MẠCH ĐIỆN TỬ RELAY
+
+#define RL_DEN 4
+#define RL_QUAT 5
+void setup()
+{
+  pinMode(RL_DEN,OUTPUT);
+  pinMode(RL_QUAT,OUTPUT);
+}
+void loop()
+{
+  
+}
+xuất 0vdc 4 hoặc 5 => digitalWrite(4,0) or digitalWrite(4,LOW) => 0 , LOW => 0VDC 
+
+xuất 5vdc 4 hoặc 5 => digitalWrite(4,1) or digitalWrite(4,HIGH) => 1 , HIGH => 5VDC 
+
+// điêu khiển qua dữ liệu 
+viết dữ liệu điều khiển vào hàm  Read_UART()
+//============================================================================
+3/ Truyền dữ liệu Uno về Monitor( ESP8266 - esp32)
+
+
+THUẬT TOÁN TRUYỀN DỮ LIỆU VỀ ESP XỬ LÝ => kèm các kí tự nhận biết
+
+A [dulieu1] B [dulieu2 ] C....
+
+=> để qua bên con esp xử lý và lấy dữ liệu dễ hơn để sau này đưa lên server
+
+
+ Read_UART_ESP();
+  if (millis() - last >= 1000)
+  {
+    Read_UART_ESP();
+    Read_DHT11();
+    hienthi();
+    SendDataESP();
+    last = millis();
+  }
+//=============================================================================
+PHÁT TRIỂN THÊM
+
+MUỐN ARDUINO HOẠT ĐỘNG Ở CHẾ ĐỘ AUTO VÀ MANUAL
+
+AUTO => CHẠY TỰ ĐỘNG KHÔNG CHO LÀM GÌ CẢ , KHÔNG CHO CÀI ĐẶT
+
+MANUAL => ĐIỀU KHIỂN ON OFF , CÀI ĐẶT
+
+
+=> BIẾN TRUNG GIAN => KIỂM TRA NÓ RÙI MỚI BIẾT NÓ CHẠY CHẾ ĐỘ NÀO
+
+chedo ;
+nếu chedo = 1 => AUTO
+nếu chedo = 0 => MANUAL
+
+
+
+
+
+

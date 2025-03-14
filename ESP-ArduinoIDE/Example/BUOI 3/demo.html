@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"> 
+</head>
+
+<script>
+
+function Mode()
+{
+	console.log("OnClick Button MODE");
+	var xhttp = new XMLHttpRequest();
+	xhttp.open('GET','/SendMode',true);
+	xhttp.send();
+}
+
+function TB1()
+{
+	console.log("OnClick Button TB1");
+	var xhttp = new XMLHttpRequest();
+	xhttp.open('GET','/TB1',true);
+	xhttp.send();
+}
+
+function TB2()
+{
+	console.log("OnClick Button TB2");
+	var xhttp = new XMLHttpRequest();
+	xhttp.open('GET','/TB2',true);
+	xhttp.send();
+}
+
+
+
+
+</script>
+
+<body>
+
+<h1>WEBSERVER</h1>
+
+
+<h1>
+MODE
+<button type="button" onclick= "Mode()" >MODE</button>
+</h1>
+
+<h1>
+THIẾT BỊ 1: 
+<button type="button" onclick= "TB1()">THIẾT BỊ 1</button>
+</h1>
+
+
+<h1>
+THIẾT BỊ 2: 
+<button type="button" onclick= "TB2()">THIẾT BỊ 2</button>
+</h1>
+
+
+<h1>
+NHIỆT ĐỘ: 
+<label>0</label>
+</h1>
+
+<h1>
+ĐỘ ẨM: 
+<label>0</label>
+</h1>
+
+<h1>
+TRẠNG THÁI THIẾT BỊ 1: 
+<label>OFF</label>
+</h1>
+
+<h1>
+TRẠNG THÁI THIẾT BỊ 2: 
+<label>OFF</label>
+</h1>
+
+<h1>
+CÀI ĐẶT 1: 
+<label>0</label>
+</h1>
+
+<h1>
+CÀI ĐẶT 2: 
+<label>0</label>
+</h1>
+
+
+<h1>
+CÀI ĐẶT 1: 
+<input type="text"  id="">
+<button type="button" >SEND</button>
+</h1>
+
+<h1>
+CÀI ĐẶT 2: 
+<input type="text" >
+<button type="button" >SEND</button>
+</h1>
+
+
+
+
+ 
+</body>
+</html>

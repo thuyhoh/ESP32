@@ -1,0 +1,145 @@
+#define RXD2 16
+#define TXD2 17
+
+String inputString = "";
+bool stringComplete = false;
+
+String inputString1 = "";
+bool stringComplete1 = false;
+
+long last = 0;
+void setup()
+{
+  Serial.begin(9600); //nạp code , check lỗi , nhận được dữ liệu mega gửi về không , hàm gì đó có xảy ra hay không
+  while (!Serial);
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // giao tiếp ESP - UNO
+  while (!Serial2);
+
+  Serial.println("start ESP");
+  last = millis();
+
+}
+
+void loop()
+{
+  Read_Uart();
+
+  Read_Uart_Monitor();
+  // tự động yêu cầu arudino gửi dữ liệu về
+  if (millis() - last >= 2000)
+  {
+    Serial.println("Đã Gửi Lệnh");
+    Serial2.println("NM");
+    Serial2.flush();
+    last = millis();
+  }
+}
+void Read_Uart_Monitor()
+{
+   while (Serial.available())
+  {
+    char inChar1 = (char)Serial.read();
+
+    inputString1 += inChar1;
+
+    if (inChar1 == '\n')
+    {
+      stringComplete1 = true;
+    }
+    if (stringComplete1)
+    {
+      Serial.print("Data Gửi về Uno: ");
+      Serial.println(inputString1);
+
+
+     // gửi về UNO
+      Serial2.print(inputString1);
+      Serial2.flush();
+
+      inputString1 = "";
+      stringComplete1 = false;
+    }
+  }
+}
+void Read_Uart()
+{
+  while (Serial2.available())
+  {
+    char inChar = (char)Serial2.read();
+
+    inputString += inChar;
+
+    if (inChar == '\n')
+    {
+      stringComplete = true;
+    }
+    if (stringComplete)
+    {
+      Serial.print("Data nhận từ Uno: ");
+      Serial.println(inputString);
+      //=========================
+      XulyData(String(inputString));
+      //=========================
+      inputString = "";
+      stringComplete = false;
+    }
+  }
+}
+
+
+void XulyData(String inputString)
+{
+
+  //A 1182.00 B2068.48 C 0 D 0 E 0 F 0 G 0 H 0 J 1 K
+  int TimA , TimB , TimC , TimD , TimE , TimF , TimG , TimH , TimJ , TimK;
+  TimA = inputString.indexOf("A");
+  TimB = inputString.indexOf("B");
+  TimC = inputString.indexOf("C");
+  TimD = inputString.indexOf("D");
+  TimE = inputString.indexOf("E");
+  TimF = inputString.indexOf("F");
+  TimG = inputString.indexOf("G");
+  TimH = inputString.indexOf("H");
+  TimJ = inputString.indexOf("J");
+  TimK = inputString.indexOf("K");
+
+  if (TimA >= 0 && TimE >= 0 && TimK >= 0)
+  {
+    //  DataSendEsp = "A" + String(nhietdodht) + "B" + String(doamdht) + "C" + String(trangthaitb1) + "D" + String(trangthaitb2) + "E" + String(BienEF) + "F" + String(BienGH) + "G" + String(BienJK) + "H" + String(BienKL) + "J" + chedo + "K";
+
+    String Datanhietdo , Datadoam , DataTTTB1 , DataTTTB2 , DataEF , DataGH , DataJK , DataKL , Datachedo = "";
+
+    Datanhietdo = inputString.substring(TimA + 1 , TimB);
+    Datadoam = inputString.substring(TimB + 1 , TimC);
+    DataTTTB1 = inputString.substring(TimC + 1 , TimD);
+    DataTTTB2 = inputString.substring(TimD + 1 , TimE);
+    DataEF = inputString.substring(TimE + 1 , TimF);
+    DataGH = inputString.substring(TimF + 1 , TimG);
+    DataJK = inputString.substring(TimG + 1 , TimH);
+    DataKL = inputString.substring(TimH + 1 , TimJ);
+    Datachedo = inputString.substring(TimJ + 1 , TimK);
+
+
+    Serial.print("Datanhietdo: ");
+    Serial.println(Datanhietdo);
+
+    Serial.print("Datadoam: ");
+    Serial.println(Datadoam);
+
+
+    Serial.print("DataTTTB1: ");
+    Serial.println(DataTTTB1);
+    Serial.print("DataTTTB2: ");
+    Serial.println(DataTTTB2);
+    Serial.print("DataEF: ");
+    Serial.println(DataEF);
+    Serial.print("DataGH: ");
+    Serial.println(DataGH);
+    Serial.print("DataJK: ");
+    Serial.println(DataJK);
+    Serial.print("DataKL: ");
+    Serial.println(DataKL);
+    Serial.print("Datachedo: ");
+    Serial.println(Datachedo);
+  }
+}

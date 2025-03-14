@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+    <meta charset="utf-8"> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+</head>
+
+<script>
+
+// Địa chỉ server
+var hostname = "192.168.1.143";
+// kết nối  port websockets
+var port = 9001;
+// id client => random => giúp hệ thống không bị reset
+var clientId = String(parseInt(Math.random() * 100, 10));  
+clientId += new Date().getUTCMilliseconds();;
+
+// topic nhận dữ liệu => esp gửi dữ liệu ở topic nào để web subscribe
+var topicpub = "pubdata";
+// topic ESP nhận dữ liệu
+var topicsub = "subdata";
+
+mqttClient = new Paho.MQTT.Client(hostname, port, clientId);
+mqttClient.onMessageArrived = MessageArrived;
+mqttClient.onConnectionLost = ConnectionLost;
+Connect();
+
+/*Initiates a connection to the MQTT broker*/
+function Connect(){
+	mqttClient.connect({
+	useSSL: false,
+	onSuccess: Connected,
+	onFailure: ConnectionFailed,
+	keepAliveInterval: 10,
+});
+}
+
+/*Callback for successful MQTT connection */
+function Connected() {
+	console.log("Connected MQTT broker"); // println => monitor => để thấy nó có kết nối hay không
+	// Kết nối xong thì đăng kí topic nhận dữ liệu
+	mqttClient.subscribe(topicpub);
+}
+
+/*Callback for failed connection*/
+function ConnectionFailed(res) {
+	console.log("Connect failed:" + res.errorMessage);
+}
+
+/*Callback for lost connection*/
+function ConnectionLost(res) {
+	if (res.errorCode !== 0) 
+	{
+		console.log("Connection lost:" + res.errorMessage);
+		Connect();
+	}
+}
+
+// hàm nhận dữ liệu từ broker  ( dữ liệu của esp gửi về)
+function MessageArrived(message) 
+{
+	console.log(message.destinationName +" : " + message.payloadString);
+	
+	
+	 var DataVDK  = message.payloadString;
+	   
+	   // hiển thị dữ liệu ra F12
+   
+       console.log("Dữ liệu VDK:" + DataVDK);
+	         
+      // đưa dữ liệu vào JSON để xử lý cho dễ
+	  //{"ND":"844.79","DA":"921.61","TB1":"0","TB2":"0","EF":"3000","GH":"5000","JK":"100","KL":"200","Mode":"0"}	  
+	  // lây dữ liệu trong mảng json
+	  // DataJson.ND
+	  // DataJson.DA  
+      var DataJson = JSON.parse(DataVDK); 
+	  
+	
+	  if(DataJson.ND != null)
+	  {
+		// hiển thi nhiệt độ ESP ra web
+		document.getElementById("nhietdo").innerHTML = DataJson.ND; 	
+	  }
+	  
+	  if(DataJson.DA != null)
+	  {
+		// hiển thi Độ Ẩm ESP ra web
+		document.getElementById("doam").innerHTML = DataJson.DA; 	
+	  }
+	  
+	  if(DataJson.EF != null)
+	  {
+		
+		document.getElementById("cai1").innerHTML = DataJson.EF; 	
+	  }
+	  
+	  if(DataJson.GH != null)
+	  {
+		document.getElementById("cai2").innerHTML = DataJson.GH; 	
+	  }
+	  
+	 
+	  
+	  if(DataJson.TB1 != null)
+	  {
+		if(DataJson.TB1 == 1)
+		{
+			document.getElementById("tttb1").innerHTML = "ON"; 		
+		}
+		else if(DataJson.TB1 == 0)
+		{
+			document.getElementById("tttb1").innerHTML = "OFF"; 
+		}
+	  }
+	  
+	  
+	  if(DataJson.TB2 != null)
+	  {
+		if(DataJson.TB2 == 1)
+		{
+			document.getElementById("tttb2").innerHTML = "ON"; 		
+		}
+		else if(DataJson.TB2 == 0)
+		{
+			document.getElementById("tttb2").innerHTML = "OFF"; 
+		}
+	  } 
+	
+	
+}
+
+
+function TB1()
+{
+	console.log("OnClick Button TB11111111111111111");
+	
+
+	
+	var thietbi1 = document.getElementById("tttb1").innerHTML;
+	 console.log(thietbi1);
+	 if(thietbi1 == "OFF")
+	 {
+		// ON tb 1
+		var DataSend = "A1B";
+		mqttClient.send("subdata", DataSend, 2, false);
+	 }
+	 else if(thietbi1 == "ON")
+	 {
+		// OFF
+		var DataSend = "A0B";
+		mqttClient.send("subdata", DataSend, 2, false);
+
+	 }
+}
+
+
+function TB2()
+{
+	console.log("OnClick Button TB22222222222");
+	
+	var thietbi1 = document.getElementById("tttb2").innerHTML;
+	 console.log(thietbi1);
+	 if(thietbi1 == "OFF")
+	 {
+		// ON tb 1
+		var DataSend = "C1D";
+		mqttClient.send("subdata", DataSend, 2, false);
+	 }
+	 else if(thietbi1 == "ON")
+	 {
+		// OFF
+		var DataSend = "C0D";
+		mqttClient.send("subdata", DataSend, 2, false);
+	 }
+}
+
+function SEND1()
+{
+	console.log("OnClick Button TB22222222222");
+	
+	var giatritext1 = "E" + document.getElementById("text1").value + "F"; 
+	
+	mqttClient.send("subdata", giatritext1, 2, false);
+
+	 
+}
+
+
+function SEND2()
+{
+	console.log("OnClick Button TB22222222222");	
+	var giatritext1 = "G" + document.getElementById("text2").value + "H"; 
+	mqttClient.send("subdata", giatritext1, 2, false);
+
+}
+
+
+
+</script>
+
+<body>
+
+<h1>MQTT BROKER</h1>
+
+
+
+
+<h1>
+THIẾT BỊ 1: 
+<button type="button" onclick= "TB1()">THIẾT BỊ 1</button>
+</h1>
+
+
+<h1>
+THIẾT BỊ 2: 
+<button type="button" onclick= "TB2()">THIẾT BỊ 2</button>
+</h1>
+
+
+<h1>
+NHIỆT ĐỘ: 
+<label id="nhietdo">0</label>
+</h1>
+
+<h1>
+ĐỘ ẨM: 
+<label id="doam">0</label>
+</h1>
+
+<h1>
+TRẠNG THÁI THIẾT BỊ 1: 
+<label id="tttb1">OFF</label>
+</h1>
+
+<h1>
+TRẠNG THÁI THIẾT BỊ 2: 
+<label id="tttb2">OFF</label>
+</h1>
+
+<h1>
+CÀI ĐẶT 1: 
+<label id="cai1">0</label>
+</h1>
+
+<h1>
+CÀI ĐẶT 2: 
+<label id="cai2">0</label>
+</h1>
+
+
+<h1>
+CÀI ĐẶT 1: 
+<input type="text" id="text1">
+<button type="button"   onclick= "SEND1()">SEND</button>
+</h1>
+
+<h1>
+CÀI ĐẶT 2: 
+<input type="text" id="text2">
+<button type="button"  onclick= "SEND2()">SEND</button>
+</h1>
+
+
+
+
+ 
+</body>
+</html>

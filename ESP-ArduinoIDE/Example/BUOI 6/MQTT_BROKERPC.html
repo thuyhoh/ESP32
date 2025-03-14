@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"> 
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+
+<style>
+body {font-family: Time New Roman;}
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #FFCC00;
+}
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+
+}
+input[type="checkbox"]
+{
+  position: relative;
+  width: 150px;
+    height: 40px;
+  -webkit-appearance: none;
+  background: linear-gradient(0deg,#333, #000);
+  outline: none;
+  border-radius: 20px;
+  box-shadow: 0 0 0 4px #ff0000, 0 0 0 5px #ff0000, inset 0 0 10px rgba(0,0,0,1), 0 5px 20px rgba(0,0,0,.5), inset 0 0 15px rgba(0,0,0,.2);
+}
+input:checked[type="checkbox"]
+{
+   background: linear-gradient(0deg,#6dd1ff, #20b7ff);
+    box-shadow: 0 0 2px #6dd1ff,0 0 0 4px #ff0000, 0 0 0 5px #ff0000, inset 0 0 10px rgba(0,0,0,1), 0 5px 20px rgba(0,0,0,.5), inset 0 0 15px rgba(0,0,0,.2);
+
+}
+input[type="checkbox"]:before
+{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 40px;
+  background: linear-gradient(0deg,#000, #6b6b6b);
+  border-radius: 20px;
+  box-shadow: 0 0 0 1px #232323;
+  transform: scale(.98,.96);
+  transition: .5s ;
+}
+input:checked[type="checkbox"]:before 
+{
+   left: 70px;
+}
+
+input[type="checkbox"]:after
+{
+  content: '';
+  position: absolute;
+  top: calc(30% - 2px);
+  left: 50px;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(0deg, #6b6b6b, #000);
+  border-radius: 50%;
+  transition: .5s ;
+}
+input:checked[type="checkbox"]:after
+{
+   background: #63cdff;
+   left: 120px;
+   box-shadow: 0 0 0 1px #13b3ff , 0 0 0 1px #13b3ff;
+}
+.button {
+  display: inline-block;
+  padding: 15px 25px;
+  font-size: 24px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  outline: none;
+  color: #fff;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 9px #999;
+}
+.button:hover {background-color: #3e8e41}
+.button:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+  
+  #snackbar {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #ffff00;
+  color: #ff0000;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+}
+
+#snackbar {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+}
+
+#snackbar.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+}
+}
+</style>
+
+
+<script type="text/javascript">
+
+	var hostname = "192.168.1.25";
+var port = 9001;
+var clientId = "WebSocket";
+clientId += new Date().getUTCMilliseconds();;
+var topicpub = "abc";
+var topicsub = "a";
+
+mqttClient = new Paho.MQTT.Client(hostname, port, clientId);
+mqttClient.onMessageArrived = MessageArrived;
+mqttClient.onConnectionLost = ConnectionLost;
+Connect();
+
+/*Initiates a connection to the MQTT broker*/
+function Connect(){
+	mqttClient.connect({
+	onSuccess: Connected,
+	onFailure: ConnectionFailed,
+	keepAliveInterval: 10,
+});
+}
+
+/*Callback for successful MQTT connection */
+function Connected() {
+	console.log("Connected to broker");
+	mqttClient.subscribe(topicpub);
+}
+
+/*Callback for failed connection*/
+function ConnectionFailed(res) {
+	console.log("Connect failed:" + res.errorMessage);
+}
+
+/*Callback for lost connection*/
+function ConnectionLost(res) {
+	if (res.errorCode !== 0) {
+		console.log("Connection lost:" + res.errorMessage);
+		Connect();
+	}
+}
+
+
+   function SENDClick()
+	{
+		var data = "hello broker----";
+        mqttClient.send(topicsub, data, 2, false);
+	    
+    }	
+
+/*Callback for incoming message processing */
+function MessageArrived(message) {
+	console.log(message.destinationName +" : " + message.payloadString);
+}
+
+   function changeFunc()
+   {
+    var selectBox = document.getElementById("selectBox");
+    var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+
+	if(selectedValue == 1)
+	{
+		openCity(event, 'Dieukhien');
+	}
+	else if(selectedValue == 2)
+	{
+		openCity(event, 'CamBien');
+	}
+	else if(selectedValue == 3)
+	{
+		openCity(event, 'DuPhong1');
+	}
+	else if(selectedValue == 4)
+	{
+		openCity(event, 'DuPhong2');
+	}
+	else
+	{
+		openCity(event, 'GioiThieu');
+	}
+  } 
+ function Dieukhienthietbi1()
+ {
+		var checkBoxTB1 = document.getElementById("myCheckthietbi1");
+        if (checkBoxTB1.checked == true)
+        {       
+				var DataSend = "A1B";
+				mqttClient.send(topicsub, DataSend);
+				console.log(topicsub + DataSend);
+			
+				
+        } 
+        else  if (checkBoxTB1.checked == false)
+        {
+				var DataSend = "A0B";
+				mqttClient.send(topicsub, DataSend);
+				console.log(topicsub + DataSend);
+		
+				
+        } 
+ }
+
+ function Dieukhienthietbi2()
+ {
+		var checkBoxTB2 = document.getElementById("myCheckthietbi2");
+        if (checkBoxTB2.checked == true)
+        {       
+				var DataSend = "C1D";
+				mqttClient.send(topicsub, DataSend);
+				console.log(topicsub + DataSend);
+		
+			
+        } 
+        else  if (checkBoxTB2.checked == false)
+        {
+				var DataSend = "C0D";
+				mqttClient.send(topicsub, DataSend);
+				console.log(topicsub + DataSend);
+				
+        } 
+ }
+ 
+
+function start()
+{
+    openCity(event, 'GioiThieu');
+
+}
+
+
+function SEND_1()
+{
+	var Datagui1 = "E" + document.getElementById("caidat11").value + "F";
+
+	mqttClient.send(topicsub, Datagui1);
+	console.log(topicsub + Datagui1);
+	
+}
+
+function SEND_2()
+{
+	var Datagui2 = "G" + document.getElementById("caidat22").value + "H";
+	mqttClient.send(topicsub, Datagui2);
+	console.log(topicsub + Datagui2);
+	
+  
+}
+
+function SETDIM()
+{
+	var text1 = "E" + document.getElementById("a").value + "F";
+	console.log(text1);
+	mqttClient.send(topicsub, text1);
+	console.log(topicsub + text1);
+}
+
+
+
+</script>
+
+</head>
+<body onload="start()" style= "background-color: #00FFFF;">       
+        <div style="position: fixed">
+              <span style = "color: Blue ;"> <b>Chọn</b> </span> 
+                  <select id="selectBox"  onchange="changeFunc()">
+                      <option value = "0" >Giới Thiệu</option>
+                    <option value = "1">Điều Khiển</option>
+                    <option value = "2">Cảm Biến</option>
+                    <option value = "3">Dự Phòng 1</option>
+                    <option value = "4">Dự Phòng 2</option> 
+              <option value = "5">Dự Phòng 3</option> 
+                  </select>
+        </div>        
+<div id="Dieukhien" class="tabcontent"> 
+     <table width="1000" height="400" border="6" cellpadding="10" align="center">  
+   <tr>
+        <th bgcolor="#FF9900"  colspan="5"> <center> <font size="10"> <span style = "color: red"> Điều Khiển Thiết Bị</span></font></center></th>
+   </tr>  
+   
+   
+   <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Thiết bị 1 </b>  </span> </center> </td>
+        <td bgcolor="#00FF00" colspan="1" align="center" >  
+        <input type="checkbox" class="checkbox" id="myCheckthietbi1"   onclick="Dieukhienthietbi1()">
+        </td>
+    <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Trạng thái thiết bị 1 </b>  </span> </center> </td>
+    <td bgcolor="#ffffff" colspan="2" align="center">
+    <img id="tb1"src="anh/off.jpg">
+     </td>   
+     </tr>
+   
+   <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Thiết bị 2 </b>  </span> </center> </td>
+        <td bgcolor="#00FF00" colspan="1" align="center">  
+          <input type="checkbox" class="checkbox" id="myCheckthietbi2"   onclick="Dieukhienthietbi2()">     
+        </td>
+    <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Trạng thái thiết bị 2 </b>  </span> </center> </td>
+    <td bgcolor="#ffffff" colspan="2" align="center">
+		<img id="tb2" src="anh/on.jpg">
+        </td>   
+     </tr>
+   <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Thiết bị 3 </b>  </span> </center> </td>
+        <td bgcolor="#00FF00" colspan="1" align="center">      
+      <button class="button">Click Me</button>        
+        </td>
+    <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Trạng thái thiết bị 3 </b>  </span> </center> </td>
+    <td bgcolor="#ffffff" colspan="2" align="center">  
+			<img src="anh/off.jpg">
+        </td>   
+     </tr>
+   <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Thiết bị 4 </b>  </span> </center> </td>
+        <td bgcolor="#00FF00" colspan="1" align="center">  
+          <button class="button">Click Me</button>      
+        </td>
+    <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Trạng thái thiết bị 4 </b>  </span> </center> </td>
+    <td bgcolor="#ffffff" colspan="2" align="center">
+		<img src="anh/off.jpg">
+  
+        </td>   
+     </tr>         
+   </table>  
+</div>
+
+<div id="CamBien" class="tabcontent">
+
+  <table width="1000" height="400" border="6" cellpadding="10" align="center">
+     <tr>
+        <th  bgcolor="#FF9900" colspan="2"> <center> <font size="10"> <span style = "color: red"> THÔNG SỐ CẢM BIẾN</span></font></center></th>
+   </tr>  
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Nhiệt Độ </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+      <h1 id="nhietdo">0</h1>
+        </td>
+     </tr>   
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Độ Ẩm </b> </span> </center> </td>
+    
+        <td bgcolor="#FF00FF" colspan="1">
+      <h1 id="doam">0</h1>
+    
+    </td>
+    </tr>  
+
+   
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Ánh Sáng </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+    <h1 id="anhsang">0</h1>
+      
+        </td>
+    </tr> 
+  
+  
+  <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Thông số cài đặt 1 </b> </span> </center> </td>
+        <td bgcolor="#40ff00" colspan="1">
+    <h1 id="caidatthongso1">0</h1>
+      
+        </td>
+    </tr>
+
+  <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Thông số cài đặt 2 </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+    <h1 id="caidatthongso2">0</h1>
+        </td>
+    </tr>
+  
+  
+  
+  
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Cài Đặt 1</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="caidat11" type="text" size="40" placeholder="Cài Đặt 1" >
+      <button  type="button" class="btn btn-success" onclick = "SEND_1()">Send</button>
+        </td>
+     </tr> 
+   
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Cài Đặt 2</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="caidat22" type="text" size="40" placeholder="Cài Đặt 2" >
+      <button  type="button" class="btn btn-success" onclick = "SEND_2()">Send</button>
+        </td>
+     </tr> 
+  </table>
+  
+</div>
+<div id="DuPhong1" class="tabcontent">
+
+<table width="1000" height="400" border="6" cellpadding="10" align="center">
+   <tr>
+        <th bgcolor="#FF9900" colspan="2"> <center> <font size="10"> <span style = "color: red"> CHẾ ĐỘ MANUAL</span></font></center></th>
+   </tr>   
+    <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Độ Lux </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="DoLuxCamBien_Manual" type="text" size="40" placeholder="Độ Lux Cảm Biến" >
+        </td>
+     </tr>   
+   <tr>
+        <th bgcolor="#00FF00" colspan="2"> <center> <font size="10"> <span style = "color: red"> Công Suất Điều Khiển Từng Line</span></font></center></th>
+   </tr>     
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 1</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="CONGSUAT_LINE1" type="text" size="40" placeholder="Công Suất Điều Khiển Line 1" >
+        </td>
+     </tr>   
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 2</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="CONGSUAT_LINE2" type="text" size="40" placeholder="Công Suất Điều Khiển Line 2" >
+        </td>
+     </tr>   
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 3</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="CONGSUAT_LINE3" type="text" size="40" placeholder="Công Suất Điều Khiển Line 3" >
+        </td>
+     </tr>   
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 4</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="CONGSUAT_LINE4" type="text" size="40" placeholder="Công Suất Điều Khiển Line 4" >
+        </td>
+     </tr>   
+   <tr>
+        <th bgcolor="#00FF00" colspan="2"> <center> <font size="10"> <span style = "color: red"> Điều Khiển Công Suất Theo Line</span></font></center></th>
+   </tr>   
+   <tr>
+        <td  bgcolor="#FFFF00" colspan="1">        
+         <center>  
+              <span style = "color: Blue"> <b> Chọn Line</b> </span> 
+                  <select id = "chon">
+                      <option value = "ALL">All</option>
+                    <option value = "1">1</option>
+                    <option value = "2">2</option>
+                    <option value = "3">3</option>
+                    <option value = "4">4</option>       
+                  </select>
+       </center>
+    </td>   
+        <td bgcolor="#FF00FF" colspan="1">
+        <input id="a" type = "range" style = "width:350px " min = "0" max = "255" />
+		<label id="text1" >0</label>
+      <button style="height:50px;width:100px" id="btnSendDim" type="button" class="btn btn-success" onclick = "SETDIM()">Set</button>
+      </br>
+      <font size="5"> <span style = "color: Blue"> Line 1  :  &nbsp </span></font>
+      <input type = "text" size = "2" id = "LINE1" placeholder = "0%"/>     
+      <font size="5"> <span style = "color: Blue"> Line 2 : &nbsp </span></font>
+      <input type = "text" size = "2" id = "LINE2" placeholder = "0%"/>       
+      <font size="5"> <span style = "color: Blue"> Line 3 : &nbsp </span></font>
+      <input type = "text" size = "2" id = "LINE3" placeholder = "0%"/>       
+      <font size="5"> <span style = "color: Blue"> Line 4 : &nbsp </span></font>
+      <input type = "text" size = "2" id = "LINE4" placeholder = "0%"/>       
+        </td>   
+     </tr> 
+  </table>
+</div>
+</br>
+<div id="DuPhong2" class="tabcontent">
+  <table width="1000" height="400" border="6" cellpadding="10" align="center">
+    <tr>
+        <th bgcolor="#FF9900" colspan="11"> <center> <font size="10"> <span style = "color: red"> DỮ LIỆU CHUNG</span></font></center></th>
+      </tr> 
+    <tr>
+          <td bgcolor="#00FF00" colspan="11"> 
+        <span style = "color: Blue"> <b> Đèn  </b> </span>  
+        <input id="Den" type="text" size="5" placeholder="Đèn" >      
+        <span style = "color: Blue"> <b> Line  </b> </span>  
+        <input id="Line" type="text" size="5" placeholder="Line" >      
+        <span style = "color: Blue"> <b> Điện Áp  </b> </span>
+        <input id="DienAp" type="text" size="5" placeholder="Điện Áp" >     
+        <span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+        <input id="DongDien" type="text" size="5" placeholder="Dòng Điện" >     
+        <span style = "color: Blue"> <b> Công Suất  </b> </span>
+        <input id="CongSuat" type="text" size="5" placeholder="Công Suất" >     
+        <span style = "color: Blue"> <b> Note  </b> </span>
+        <input id="GhiChu" type="text" size="20" placeholder="Ghi Chú" >        
+      </td>
+      </tr> 
+        <tr>
+        <th bgcolor="#FF9900" colspan="11"> <center> <font size="6"> <span style = "color: red"> THÔNG SỐ HIỆN TẠI ĐÈN</span></font></center></th>
+      </tr> 
+    <tr>
+        <td bgcolor="#FFFF00" colspan="1">
+           <span style = "color: Blue"> <b> Đèn 1  </b> </span>  
+      </td>
+            <td bgcolor="#00FF00" colspan="10">       
+        <span style = "color: Blue"> <b> Line  </b> </span>  
+        <input id="Line1" type="text" size="5" placeholder="Line" >     
+        <span style = "color: Blue"> <b> Điện Áp  </b> </span>
+        <input id="DienAp1" type="text" size="5" placeholder="Điện Áp" >      
+        <span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+        <input id="DongDien1" type="text" size="5" placeholder="Dòng Điện" >      
+        <span style = "color: Blue"> <b> Công Suất  </b> </span>
+        <input id="CongSuat1" type="text" size="5" placeholder="Công Suất" >      
+        <span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+        <input id="GhiChu1" type="text" size="20" placeholder="Ghi Chú" >       
+      </td>          
+        </tr>   
+    <tr>
+      <td bgcolor="#FFFF00" colspan="1">
+           <span style = "color: Blue"> <b> Đèn 2  </b> </span>  
+      </td>     
+            <td bgcolor="#00FF00" colspan="10">         
+        <span style = "color: Blue"> <b> Line  </b> </span>  
+        <input id="Line2" type="text" size="5" placeholder="Line" >     
+        <span style = "color: Blue"> <b> Điện Áp  </b> </span>
+        <input id="DienAp2" type="text" size="5" placeholder="Điện Áp" >        
+        <span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+        <input id="DongDien2" type="text" size="5" placeholder="Dòng Điện" >        
+        <span style = "color: Blue"> <b> Công Suất  </b> </span>
+        <input id="CongSuat2" type="text" size="5" placeholder="Công Suất" >        
+        <span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+        <input id="GhiChu2" type="text" size="20" placeholder="Ghi Chú" >       
+      </td>            
+        </tr>   
+    <tr>
+      <td bgcolor="#FFFF00" colspan="1">
+           <span style = "color: Blue"> <b> Đèn 3  </b> </span>  
+      </td>     
+            <td bgcolor="#00FF00" colspan="10">                 
+        <span style = "color: Blue"> <b> Line  </b> </span>  
+        <input id="Line3" type="text" size="5" placeholder="Line" >       
+        <span style = "color: Blue"> <b> Điện Áp  </b> </span>
+        <input id="DienAp3" type="text" size="5" placeholder="Điện Áp" >      
+        <span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+        <input id="DongDien3" type="text" size="5" placeholder="Dòng Điện" >      
+        <span style = "color: Blue"> <b> Công Suất  </b> </span>
+        <input id="CongSuat3" type="text" size="5" placeholder="Công Suất" >        
+        <span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+        <input id="GhiChu3" type="text" size="20" placeholder="Ghi Chú" >
+      </td>            
+        </tr>         
+    <tr>      
+      <td bgcolor="#FFFF00" colspan="1">
+           <span style = "color: Blue"> <b> Đèn 4  </b> </span>  
+      </td>     
+            <td bgcolor="#00FF00"colspan="10">        
+        <span style = "color: Blue"> <b> Line  </b> </span>  
+        <input id="Line4" type="text" size="5" placeholder="Line" >     
+        <span style = "color: Blue"> <b> Điện Áp  </b> </span>
+        <input id="DienAp4" type="text" size="5" placeholder="Điện Áp" >        
+        <span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+        <input id="DongDien4" type="text" size="5" placeholder="Dòng Điện" >        
+        <span style = "color: Blue"> <b> Công Suất  </b> </span>
+        <input id="CongSuat4" type="text" size="5" placeholder="Công Suất" >        
+        <span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+        <input id="GhiChu4" type="text" size="20" placeholder="Ghi Chú" >       
+      </td>            
+        </tr>   
+  </table> 
+</div>
+
+<div id="GioiThieu" class="tabcontent">
+   <h1>Xin Chào!!! Lớp Học IOT Online</h1>
+</div>
+</br>
+
+
+<script>
+function openCity(evt, cityName) 
+{ 
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+</script>
+
+
+</body>
+</html> 

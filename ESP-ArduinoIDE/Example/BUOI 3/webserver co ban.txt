@@ -1,0 +1,78 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+ESP8266WebServer server(80);
+
+
+
+const char* ssid = "Bao Truc";
+const char* pass = "24682468";
+
+#define LED1 2
+#define LED2 16
+
+
+
+
+
+// lưu trữ liệu => thực hiện chức luu => uno esp reset  , EEPROM ( code )  => cúp điện , reset uno esp => lưu biến giá 10
+
+const char webpage[] PROGMEM = R"=====(
+
+)=====";
+
+
+void SendWebPage()
+{
+  server.send(200, "text/html", webpage );
+}
+
+
+void setup()
+{
+  Serial.begin(9600);
+  while (!Serial);
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  digitalWrite(LED1, HIGH);
+  digitalWrite(LED2, HIGH);
+
+
+  // kết nối wifi
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  //=============================================================
+  Serial.println();
+  Serial.println("Connect WiFi");
+  Serial.print("Address IP esp: ");
+  Serial.println(WiFi.localIP());
+  
+  
+
+  server.on("/", [] {
+    SendWebPage();
+  });
+
+  
+  server.begin();
+
+  Serial.println("Server start");
+
+  last = millis();
+
+  
+}
+
+void loop() 
+{
+  
+  server.handleClient(); // duy tri server cho mình
+
+}
+
+
