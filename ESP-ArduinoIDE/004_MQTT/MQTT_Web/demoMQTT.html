@@ -29,17 +29,14 @@
 
     // connect
     Connect();
+    
     /*Initiates a connection to the MQTT broker*/
     function Connect() {
         mqttClient.connect({
             useSSL: false, // Dùng SSL nếu broker yêu cầu
-            reconnect: true, // có kết nối lại hay không 
-            onSuccess: function () {
-                console.log("Kết nối MQTT thành công!");
-            },
-            onFailure: function (error){
-                console.log("Kết nối thất bại:", error.errorMessage);
-            },
+            // reconnect: true, // có kết nối lại hay không 
+            onSuccess: Connected,
+            onFailure: ConnectionFailed,
             keepAliveInterval: 10,
         });
     }
@@ -65,9 +62,9 @@
 
     // hàm nhận dữ liệu từ broker  ( dữ liệu của esp gửi về)
     function MessageArrived(message) {
-
         // dữ liệu của web nhận được trong cái biến message.payloadString ( được esp chuẩn hóa về JSON rùi)
         console.log(message.destinationName + " : " + message.payloadString);
+        var DataVDK = message.payloadString; // nhận dữ liệu từ mqtt
     }
 
     function TB1() {
