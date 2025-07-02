@@ -2,17 +2,17 @@
 #include <PubSubClient.h>
 
 /* WiFi */
-const char* ssid = "6 aesiunhan";
+const char* ssid = ".......";
 const char* pass = "cccccccc";
 
 /* MQTT */
 WiFiClient espClient;
 PubSubClient client(espClient);
-const char* mqtt_ip = "192.168.1.13"; // ip server
+const char* mqtt_ip = "172.20.10.13"; // ip server
 uint32_t mqtt_port = 1883; // 8883
 
-const char* mqtt_subtopic = "subdata"; 
-const char* mqtt_pubtopic = "pubdata";
+const char* mqtt_subtopic = "esp2web"; 
+const char* mqtt_pubtopic = "web2esp";
 
 const char* msg = "Hello Esp32"; 
 
@@ -32,7 +32,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(!client.connected())
   {
-    ReconnectMqttBroker(mqtt_ip, mqtt_topic);
+    ReconnectMqttBroker(mqtt_ip, mqtt_subtopic);
   }
   client.publish(mqtt_pubtopic, msg);
   delay(100);

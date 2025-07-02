@@ -8,7 +8,7 @@
 </header>
 <script>
     // Địa chỉ server
-    var hostname = "192.168.1.13";
+    var hostname = "192.168.1.5";
     // kết nối port websockets
     var port = 9001;
     // id client => random => giúp hệ thống không bị reset
@@ -79,8 +79,6 @@
         var message = new Paho.MQTT.Message(DataSend);
         mqttClient.send("subdata", DataSend, 2, false);
     }
-
-
 </script>
 
 <body>

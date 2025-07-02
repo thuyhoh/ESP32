@@ -53,6 +53,11 @@ Serial.begin(Baudrate);
 */
 Serial.println(string);/Serial.print(string);
 ```
+# Xử lý chuỗi Json
+- thư viện ArduinoJson.h
+``` Cpp
+
+```
 
 
 

@@ -56,7 +56,7 @@ void Button()
         // gửi lệnh qua kia để điều khiển
         DataSend = "";
         DataSend = "{\"RL1\":\"1\"}";
-        StaticJsonDocument<200> doc;
+        StaticRead_UART_JSONDocument<200> doc;
         deserializeJson(doc, DataSend);
         serializeJsonPretty(doc, mySerial);
         mySerial.flush();
