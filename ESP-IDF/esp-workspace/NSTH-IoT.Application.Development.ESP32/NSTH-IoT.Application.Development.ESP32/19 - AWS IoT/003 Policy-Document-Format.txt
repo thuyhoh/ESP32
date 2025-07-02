@@ -1,0 +1,5 @@
+Policy effect		Policy action		Policy resource
+Allow				iot:Connect			arn:aws:iot:REGION:ACCOUNT:client/Udemy_ESP32_Test
+Allow				iot:Subscribe		arn:aws:iot:REGION:ACCOUNT:topicfilter/test_topic/esp32
+Allow				iot:Receive			arn:aws:iot:REGION:ACCOUNT:topic/test_topic/esp32
+Allow				iot:Publish			arn:aws:iot:REGION:ACCOUNT:topic/test_topic/esp32
